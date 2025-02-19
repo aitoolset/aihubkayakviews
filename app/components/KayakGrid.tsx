@@ -2,22 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import { KayakReview } from '@/app/types'
-import BikeReviewCard from './BikeReviewCard'
+import KayakReviewCard from './KayakReviewCard'
 
-export default function ElectricBikeGrid() {
+export default function KayakGrid() {
   const [reviews, setReviews] = useState<KayakReview[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchBikeReviews()
+    fetchKayakReviews()
   }, [])
 
-  async function fetchBikeReviews() {
+  async function fetchKayakReviews() {
     try {
-      const response = await fetch('/api/bikes')
+      const response = await fetch('/api/kayaks')
       if (!response.ok) {
-        throw new Error('Failed to fetch bike reviews')
+        throw new Error('Failed to fetch kayak reviews')
       }
       const data = await response.json()
       setReviews(data)
@@ -48,7 +48,7 @@ export default function ElectricBikeGrid() {
     <div className="max-w-2xl mx-auto">
       <div className="flex flex-col gap-8">
         {reviews.map((review) => (
-          <BikeReviewCard key={review.id} review={review} />
+          <KayakReviewCard key={review.id} review={review} />
         ))}
       </div>
     </div>

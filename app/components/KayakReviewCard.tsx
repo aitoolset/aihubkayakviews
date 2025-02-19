@@ -1,25 +1,60 @@
 import { KayakReview } from '@/app/types'
+import { useState, useEffect } from 'react'
 
 interface Props {
   review: KayakReview
 }
 
-export default function BikeReviewCard({ review }: Props) {
+export default function KayakReviewCard({ review }: Props) {
+  const [firstVideoUrl, setFirstVideoUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(review.title + ' kayak review')}`
+
+  useEffect(() => {
+    async function fetchFirstVideo() {
+      try {
+        const response = await fetch(`/api/youtube-search?q=${encodeURIComponent(review.title + ' kayak review')}`)
+        if (!response.ok) throw new Error('Failed to fetch video')
+        const data = await response.json()
+        setFirstVideoUrl(data.videoUrl)
+      } catch (error) {
+        console.error('Error fetching video:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFirstVideo()
+  }, [review.title])
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      {/* Video Search Link Section */}
+      {/* Video Section */}
       <div className="p-6 bg-gray-50">
-        <p className="text-gray-700 mb-2">Click this link to see videos about this kayak:</p>
-        <a 
-          href={searchUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-        >
-          {review.title}
-        </a>
+        <p className="text-gray-700 mb-2">Watch review video:</p>
+        {loading ? (
+          <div className="h-8 flex items-center">
+            <div className="animate-pulse bg-gray-200 h-4 w-48 rounded"></div>
+          </div>
+        ) : firstVideoUrl ? (
+          <a 
+            href={firstVideoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+          >
+            Watch {review.title} Review
+          </a>
+        ) : (
+          <a 
+            href={searchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+          >
+            Search for {review.title} Reviews
+          </a>
+        )}
       </div>
 
       {/* Specs Section */}
@@ -31,8 +66,7 @@ export default function BikeReviewCard({ review }: Props) {
           <SpecRow label="Weight" value={`${review.specs.weight} lbs`} />
           <SpecRow label="Capacity" value={`${review.specs.capacity} lbs`} />
           <SpecRow label="Material" value={review.specs.material} />
-          <SpecRow label="Accessories" value={review.specs.accessories} />
-          <SpecRow label="Seats" value={review.specs.seats} />
+          <SpecRow label="Type" value={review.specs.type} />
           <SpecRow label="Price" value={`$${review.specs.price}`} />
         </div>
         

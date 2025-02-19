@@ -1,15 +1,17 @@
-export interface BikeReview {
+export interface KayakReview {
   id: number
   title: string
-  videoUrl: string
-  thumbnailUrl: string
   specs: {
-    range: string
-    topSpeed: string
-    motor: string
-    battery: string
-    weight: string
-    price: string
+    length: string | number
+    width: string | number
+    weight: string | number
+    capacity: string | number
+    material: string
+    type: string
+    price: string | number
+    accessories: string
+    seats: string | number
   }
+  summary: string
   reviewDate: string
 } 

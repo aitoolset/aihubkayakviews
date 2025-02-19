@@ -3,8 +3,12 @@ import ElectricBikeGrid from './components/ElectricBikeGrid'
 export default function Home() {
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Top Electric Bikes - Last 3 Months</h1>
-      <ElectricBikeGrid />
+      <h1 className="text-3xl font-bold text-center mb-8">
+        Top Kayak Rides - Last 6 Months
+      </h1>
+      <div className="flex justify-center">
+        <ElectricBikeGrid />
+      </div>
     </main>
   )
 }
