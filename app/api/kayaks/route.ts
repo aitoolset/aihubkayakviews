@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
 import { KayakReview } from '@/app/types'
 
-// Add static configuration
 export const dynamic = 'force-static'
 export const revalidate = 3600 // revalidate every hour
 
-// Pre-generated kayak data
 const staticKayakData: KayakReview[] = [
   {
     id: 1,
@@ -61,5 +59,6 @@ const staticKayakData: KayakReview[] = [
 ]
 
 export async function GET() {
+  console.log('API route hit, returning data')
   return NextResponse.json(staticKayakData)
 } 

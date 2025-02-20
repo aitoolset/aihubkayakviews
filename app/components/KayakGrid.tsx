@@ -16,12 +16,17 @@ export default function KayakGrid() {
   async function fetchKayakReviews() {
     try {
       const response = await fetch('/api/kayaks')
+      console.log('Response status:', response.status)
       if (!response.ok) {
-        throw new Error('Failed to fetch kayak reviews')
+        const errorText = await response.text()
+        console.error('Response error:', errorText)
+        throw new Error(`Failed to fetch kayak reviews: ${response.status} ${errorText}`)
       }
       const data = await response.json()
+      console.log('Received data:', data)
       setReviews(data)
     } catch (err) {
+      console.error('Fetch error:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
