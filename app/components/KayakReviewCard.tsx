@@ -1,44 +1,24 @@
 'use client'
 import { KayakReview } from '@/app/types'
-import { useState, useEffect } from 'react'
 
 interface Props {
   review: KayakReview
 }
 
 export default function KayakReviewCard({ review }: Props) {
-  const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(review.title + ' kayak review')}`
-
-  useEffect(() => {
-    // Move the YouTube search to client-side
-    const searchYouTube = async () => {
-      try {
-        const response = await fetch(searchUrl)
-        const html = await response.text()
-        const videoIdMatch = html.match(/watch\?v=([^"&]+)/)
-        if (videoIdMatch) {
-          setVideoUrl(`https://www.youtube.com/watch?v=${videoIdMatch[1]}`)
-        }
-      } catch (error) {
-        console.error('Failed to fetch video:', error)
-      }
-    }
-
-    searchYouTube()
-  }, [review.title, searchUrl])
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Video Search Link Section */}
       <div className="p-6 bg-gray-50">
         <a 
-          href={videoUrl || searchUrl}
+          href={searchUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
         >
-          {videoUrl ? `Watch ${review.title} Review` : `Search for ${review.title} Reviews`}
+          Search for {review.title} Reviews
         </a>
       </div>
 
