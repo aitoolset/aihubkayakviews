@@ -137,7 +137,7 @@ function isValidKayakReview(review: unknown): review is KayakReview {
 
   // Log which validations failed
   const failedValidations = Object.entries(validations)
-    .filter(([_, passes]) => !passes)
+    .filter(([key, passes]) => !passes)
     .map(([key]) => key)
 
   if (failedValidations.length > 0) {

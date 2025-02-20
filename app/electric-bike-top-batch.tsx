@@ -40,13 +40,13 @@ export default function ElectricBikeTopBatch() {
           ))}
         </div>
         <div className="space-y-4">
-          {stats.map((stat, index) => (
+          {stats.map((stat, _index) => (
             <Textarea
-              key={index}
+              key={_index}
               value={stat}
               onChange={(e) => {
                 const newStats = [...stats]
-                newStats[index] = e.target.value
+                newStats[_index] = e.target.value
                 setStats(newStats)
               }}
               className="h-40"
