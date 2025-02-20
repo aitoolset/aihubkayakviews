@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build && next export",
+    "build": "next build && cp -r public/data out/",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "npm run build && touch out/.nojekyll"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

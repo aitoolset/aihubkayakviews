@@ -17,6 +17,7 @@ export default function KayakGrid() {
     try {
       const basePath = process.env.NODE_ENV === 'production' ? '/placeskayakviews' : ''
       const response = await fetch(`${basePath}/data/kayaks.json`)
+      console.log('Fetching from:', `${basePath}/data/kayaks.json`)
       console.log('Response status:', response.status)
       if (!response.ok) {
         const errorText = await response.text()
@@ -25,6 +26,9 @@ export default function KayakGrid() {
       }
       const data = await response.json()
       console.log('Received data:', data)
+      if (!data.kayaks || !Array.isArray(data.kayaks)) {
+        throw new Error('Invalid data format')
+      }
       setReviews(data.kayaks)
     } catch (err) {
       console.error('Fetch error:', err)
@@ -46,6 +50,13 @@ export default function KayakGrid() {
     return (
       <div className="text-center text-red-500 py-8">
         Error: {error}
+        <br />
+        <button 
+          onClick={fetchKayakReviews} 
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Try Again
+        </button>
       </div>
     )
   }
