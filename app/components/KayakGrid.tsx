@@ -15,7 +15,7 @@ export default function KayakGrid() {
 
   async function fetchKayakReviews() {
     try {
-      const response = await fetch('/api/kayaks')
+      const response = await fetch('/data/kayaks.json')
       console.log('Response status:', response.status)
       if (!response.ok) {
         const errorText = await response.text()
@@ -24,7 +24,7 @@ export default function KayakGrid() {
       }
       const data = await response.json()
       console.log('Received data:', data)
-      setReviews(data)
+      setReviews(data.kayaks)
     } catch (err) {
       console.error('Fetch error:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
