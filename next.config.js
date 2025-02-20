@@ -5,7 +5,7 @@ const nextConfig = {
     unoptimized: true,
   },
   // Update this to match your GitHub repository name
-  basePath: process.env.NODE_ENV === 'production' ? '/aihubkayakviews/' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/' : '',
   assetPrefix: process.env.NODE_ENV === 'production' ? '/placeskayakviews/' : '',
 }
 
