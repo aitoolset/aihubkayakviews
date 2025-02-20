@@ -70,7 +70,8 @@ export async function GET() {
       }
 
       if (!kayakData.every(isValidKayakReview)) {
-        console.error('Invalid data structure:', JSON.stringify(kayakData, null, 2))
+        console.error('Invalid data structure. Raw data:', JSON.stringify(kayakData, null, 2))
+        console.error('Content type:', typeof kayakData)
         throw new Error('Invalid kayak data structure')
       }
     } catch (e) {
@@ -93,24 +94,56 @@ export async function GET() {
   }
 }
 
-// Type guard to validate kayak review data
-function isValidKayakReview(review: any): review is KayakReview {
-  return (
-    typeof review === 'object' &&
-    review !== null &&
-    typeof review.id === 'number' &&
-    typeof review.title === 'string' &&
-    typeof review.specs === 'object' &&
-    (typeof review.specs.length === 'string' || typeof review.specs.length === 'number') &&
-    (typeof review.specs.width === 'string' || typeof review.specs.width === 'number') &&
-    (typeof review.specs.weight === 'string' || typeof review.specs.weight === 'number') &&
-    (typeof review.specs.capacity === 'string' || typeof review.specs.capacity === 'number') &&
-    typeof review.specs.material === 'string' &&
-    typeof review.specs.type === 'string' &&
-    (typeof review.specs.price === 'string' || typeof review.specs.price === 'number') &&
-    typeof review.specs.accessories === 'string' &&
-    (typeof review.specs.seats === 'string' || typeof review.specs.seats === 'number') &&
-    typeof review.summary === 'string' &&
-    typeof review.reviewDate === 'string'
-  )
+// First, let's create an interface for the unknown review object
+interface UnknownReview {
+  id: unknown
+  title: unknown
+  specs: {
+    length: unknown
+    width: unknown
+    weight: unknown
+    capacity: unknown
+    material: unknown
+    type: unknown
+    price: unknown
+    accessories: unknown
+    seats: unknown
+  }
+  summary: unknown
+  reviewDate: unknown
+}
+
+// Update the type guard function with detailed logging
+function isValidKayakReview(review: unknown): review is KayakReview {
+  const r = review as UnknownReview
+  
+  const validations = {
+    isObject: typeof review === 'object' && review !== null,
+    hasId: typeof r.id === 'number',
+    hasTitle: typeof r.title === 'string',
+    hasSpecs: typeof r.specs === 'object' && r.specs !== null,
+    hasValidLength: typeof r.specs?.length === 'string' || typeof r.specs?.length === 'number',
+    hasValidWidth: typeof r.specs?.width === 'string' || typeof r.specs?.width === 'number',
+    hasValidWeight: typeof r.specs?.weight === 'string' || typeof r.specs?.weight === 'number',
+    hasValidCapacity: typeof r.specs?.capacity === 'string' || typeof r.specs?.capacity === 'number',
+    hasValidMaterial: typeof r.specs?.material === 'string',
+    hasValidType: typeof r.specs?.type === 'string',
+    hasValidPrice: typeof r.specs?.price === 'string' || typeof r.specs?.price === 'number',
+    hasValidAccessories: typeof r.specs?.accessories === 'string',
+    hasValidSeats: typeof r.specs?.seats === 'string' || typeof r.specs?.seats === 'number',
+    hasValidSummary: typeof r.summary === 'string',
+    hasValidReviewDate: typeof r.reviewDate === 'string'
+  }
+
+  // Log which validations failed
+  const failedValidations = Object.entries(validations)
+    .filter(([_, passes]) => !passes)
+    .map(([key]) => key)
+
+  if (failedValidations.length > 0) {
+    console.error('Validation failed for:', failedValidations)
+    console.error('Received data:', JSON.stringify(review, null, 2))
+  }
+
+  return Object.values(validations).every(Boolean)
 } 
