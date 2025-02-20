@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { queryOpenRouter } from '@/app/utils/openrouter'
 import { KayakReview } from '@/app/types'
 
 // Add static configuration
@@ -25,7 +24,40 @@ const staticKayakData: KayakReview[] = [
     summary: "The Pescador Pro 12.0 offers excellent stability and features for fishing enthusiasts. Its removable stadium-style seat provides all-day comfort. The kayak tracks well and offers ample storage options.",
     reviewDate: "2024-02-15"
   },
-  // Add more static kayak data...
+  {
+    id: 2,
+    title: "Old Town Vapor 10",
+    specs: {
+      length: 10,
+      width: 28.5,
+      weight: 47,
+      capacity: 325,
+      material: "Single Layer Polyethylene",
+      type: "Recreational",
+      price: 699,
+      accessories: "Comfort Flex seat, paddle keeper, cup holder",
+      seats: 1
+    },
+    summary: "The Old Town Vapor 10 is perfect for beginners and casual paddlers. It provides excellent stability and maneuverability in calm waters. The comfortable seat and easy-to-reach storage make it ideal for day trips.",
+    reviewDate: "2024-01-20"
+  },
+  {
+    id: 3,
+    title: "Wilderness Systems Pungo 120",
+    specs: {
+      length: 12.2,
+      width: 29,
+      weight: 49,
+      capacity: 325,
+      material: "High-Grade Polyethylene",
+      type: "Recreational/Touring",
+      price: 1099,
+      accessories: "Phase 3 AirPro seat, dashboard console, dry storage",
+      seats: 1
+    },
+    summary: "The Pungo 120 combines speed with stability in a versatile package. Its award-winning design includes a spacious cockpit and premium features. The kayak excels in both lakes and coastal waters.",
+    reviewDate: "2024-03-01"
+  }
 ]
 
 export async function GET() {
