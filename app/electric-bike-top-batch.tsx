@@ -30,7 +30,7 @@ export default function ElectricBikeTopBatch() {
       <h1 className="text-4xl font-bold text-center mb-8 animate-fade-in-down">Electric Bike Top-Batch</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-4">
-          {videos.map((video, index) => (
+          {videos.map((video) => (
             <Card key={video.id} className="flex">
               <img src={video.thumbnail || "/placeholder.svg"} alt={video.title} className="w-40 h-24 object-cover" />
               <CardContent className="flex-1 p-4">
