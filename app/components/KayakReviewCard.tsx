@@ -1,3 +1,4 @@
+'use client'
 import { KayakReview } from '@/app/types'
 import { useState, useEffect } from 'react'
 
@@ -6,55 +7,39 @@ interface Props {
 }
 
 export default function KayakReviewCard({ review }: Props) {
-  const [firstVideoUrl, setFirstVideoUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(review.title + ' kayak review')}`
 
   useEffect(() => {
-    async function fetchFirstVideo() {
+    // Move the YouTube search to client-side
+    const searchYouTube = async () => {
       try {
-        const response = await fetch(`/api/youtube-search?q=${encodeURIComponent(review.title + ' kayak review')}`)
-        if (!response.ok) throw new Error('Failed to fetch video')
-        const data = await response.json()
-        setFirstVideoUrl(data.videoUrl)
+        const response = await fetch(searchUrl)
+        const html = await response.text()
+        const videoIdMatch = html.match(/watch\?v=([^"&]+)/)
+        if (videoIdMatch) {
+          setVideoUrl(`https://www.youtube.com/watch?v=${videoIdMatch[1]}`)
+        }
       } catch (error) {
-        console.error('Error fetching video:', error)
-      } finally {
-        setLoading(false)
+        console.error('Failed to fetch video:', error)
       }
     }
 
-    fetchFirstVideo()
-  }, [review.title])
+    searchYouTube()
+  }, [review.title, searchUrl])
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      {/* Video Section */}
+      {/* Video Search Link Section */}
       <div className="p-6 bg-gray-50">
-        <p className="text-gray-700 mb-2">Watch review video:</p>
-        {loading ? (
-          <div className="h-8 flex items-center">
-            <div className="animate-pulse bg-gray-200 h-4 w-48 rounded"></div>
-          </div>
-        ) : firstVideoUrl ? (
-          <a 
-            href={firstVideoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-          >
-            Watch {review.title} Review
-          </a>
-        ) : (
-          <a 
-            href={searchUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-          >
-            Search for {review.title} Reviews
-          </a>
-        )}
+        <a 
+          href={videoUrl || searchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+        >
+          {videoUrl ? `Watch ${review.title} Review` : `Search for ${review.title} Reviews`}
+        </a>
       </div>
 
       {/* Specs Section */}

@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
 
+// Add these exports to configure static generation
+export const dynamic = 'force-static'
+export const revalidate = 3600 // revalidate every hour
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const query = searchParams.get('q')
