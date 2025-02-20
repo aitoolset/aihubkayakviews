@@ -1,4 +1,4 @@
-import ElectricBikeGrid from './components/ElectricBikeGrid'
+import KayakGrid from './components/KayakGrid'
 
 export default function Home() {
   return (
@@ -7,7 +7,7 @@ export default function Home() {
         Top Kayak Rides - Last 6 Months
       </h1>
       <div className="flex justify-center">
-        <ElectricBikeGrid />
+        <KayakGrid />
       </div>
     </main>
   )
