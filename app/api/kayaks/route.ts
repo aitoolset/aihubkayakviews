@@ -24,24 +24,37 @@ const prompt = `List the top 5 most popular single-seat kayaks reviewed in the p
   "reviewDate": (actual review publication date in YYYY-MM-DD format)
 }`
 
+// Create a type for the validation check
+type UnknownObject = {
+  [key: string]: unknown
+}
+
 function isValidKayakReview(review: unknown): review is KayakReview {
-  const r = review as any
+  if (!review || typeof review !== 'object') return false
+  const r = review as UnknownObject
+
+  // Helper function to check number or string type
+  const isNumberOrString = (value: unknown): value is number | string => 
+    typeof value === 'number' || typeof value === 'string'
+
+  // Check specs object structure
+  const specs = r.specs as UnknownObject | undefined
+  if (!specs || typeof specs !== 'object') return false
+
   return (
-    typeof r === 'object' &&
-    r !== null &&
     typeof r.id === 'number' &&
     typeof r.title === 'string' &&
-    typeof r.specs === 'object' &&
-    r.specs !== null &&
-    (typeof r.specs.length === 'number' || typeof r.specs.length === 'string') &&
-    (typeof r.specs.width === 'number' || typeof r.specs.width === 'string') &&
-    (typeof r.specs.weight === 'number' || typeof r.specs.weight === 'string') &&
-    (typeof r.specs.capacity === 'number' || typeof r.specs.capacity === 'string') &&
-    typeof r.specs.material === 'string' &&
-    typeof r.specs.type === 'string' &&
-    (typeof r.specs.price === 'number' || typeof r.specs.price === 'string') &&
-    typeof r.specs.accessories === 'string' &&
-    (typeof r.specs.seats === 'number' || typeof r.specs.seats === 'string') &&
+    typeof specs === 'object' &&
+    specs !== null &&
+    isNumberOrString(specs.length) &&
+    isNumberOrString(specs.width) &&
+    isNumberOrString(specs.weight) &&
+    isNumberOrString(specs.capacity) &&
+    typeof specs.material === 'string' &&
+    typeof specs.type === 'string' &&
+    isNumberOrString(specs.price) &&
+    typeof specs.accessories === 'string' &&
+    isNumberOrString(specs.seats) &&
     typeof r.summary === 'string' &&
     typeof r.reviewDate === 'string'
   )
@@ -60,20 +73,55 @@ export async function GET() {
 
     try {
       // Parse the AI response
-      const cleanContent = response.replace(/```json\n?|\n?```/g, '').trim()
-      kayakData = JSON.parse(cleanContent)
+      let cleanContent = response.replace(/```json\n?|\n?```/g, '').trim()
+      
+      try {
+        // First try parsing the whole response
+        kayakData = JSON.parse(cleanContent)
+      } catch (parseError) {
+        // If parsing fails, try to extract complete entries
+        const entries = cleanContent.match(/\{[^{]*"id":[^}]*\}/g) || []
+        
+        if (entries.length > 0) {
+          // Take only up to 4 entries
+          const validEntries = entries.slice(0, 4).filter((entry: string) => {
+            try {
+              JSON.parse(entry)
+              return true
+            } catch {
+              return false
+            }
+          })
+
+          if (validEntries.length === 0) {
+            throw new Error('No valid entries found')
+          }
+
+          // Reconstruct the array
+          cleanContent = `[${validEntries.join(',')}]`
+          kayakData = JSON.parse(cleanContent)
+          console.log('Recovered partial data:', kayakData)
+        } else {
+          throw new Error('No valid kayak entries found')
+        }
+      }
 
       if (!Array.isArray(kayakData)) {
         console.error('Response is not an array:', kayakData)
         throw new Error('Invalid response format')
       }
 
-      if (!kayakData.every(isValidKayakReview)) {
-        console.error('Invalid kayak data structure:', kayakData)
-        throw new Error('Invalid kayak data structure')
+      // Validate each entry and limit to 4
+      const validKayaks = kayakData
+        .filter(isValidKayakReview)
+        .slice(0, 4)
+
+      if (validKayaks.length === 0) {
+        throw new Error('No valid kayak entries found')
       }
 
-      return NextResponse.json(kayakData)
+      console.log(`Found ${validKayaks.length} valid kayak entries`)
+      return NextResponse.json(validKayaks)
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError)
       console.error('Raw response:', response)
