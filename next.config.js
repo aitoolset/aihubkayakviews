@@ -4,8 +4,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath: process.env.NODE_ENV === 'production' ? 'https://github.com/aitoolset/aihubkayakviews' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/https://github.com/aitoolset/aihubkayakviews' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/aitoolset/aihubkayakviews' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/aitoolset/aihubkayakviews' : '',
 }
 
 module.exports = nextConfig 
