@@ -9,6 +9,7 @@ export default function KayakGrid() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<{message: string; details?: string} | null>(null)
   const [isUsingCache, setIsUsingCache] = useState(false)
+  const [rawApiResponse, setRawApiResponse] = useState<string>('')
 
   useEffect(() => {
     fetchKayakReviews()
@@ -16,7 +17,7 @@ export default function KayakGrid() {
 
   async function fetchKayakReviews() {
     try {
-      const basePath = process.env.NODE_ENV === 'production' ? '/placeskayakviews' : ''
+      const basePath = process.env.NODE_ENV === 'production' ? '/aitoolset/aihubkayakviews' : ''
       const response = await fetch(`${basePath}/data/kayaks.json`)
       console.log('Fetching from:', `${basePath}/data/kayaks.json`)
       
@@ -29,6 +30,7 @@ export default function KayakGrid() {
       const data = await response.json()
       console.log('Received data:', data)
       setReviews(data.kayaks)
+      setRawApiResponse(JSON.stringify(data, null, 2))
       setIsUsingCache(response.headers.get('x-using-fallback') === 'true')
     } catch (err) {
       console.error('Fetch error:', err)
@@ -102,6 +104,14 @@ export default function KayakGrid() {
             Cached data
           </div>
         )}
+        
+        {/* Raw API Response Section */}
+        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Raw API Response:</h3>
+          <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm">
+            {rawApiResponse}
+          </pre>
+        </div>
       </div>
     </div>
   )
