@@ -7,7 +7,8 @@ import KayakReviewCard from './KayakReviewCard'
 export default function KayakGrid() {
   const [reviews, setReviews] = useState<KayakReview[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<{message: string; details?: string} | null>(null)
+  const [isUsingCache, setIsUsingCache] = useState(false)
 
   useEffect(() => {
     fetchKayakReviews()
@@ -15,28 +16,37 @@ export default function KayakGrid() {
 
   async function fetchKayakReviews() {
     try {
-      // Simplified path for static deployment
-      const response = await fetch('./data/kayaks.json')
-      console.log('Fetching from:', './data/kayaks.json')
+      const response = await fetch('/api/kayaks')
       console.log('Response status:', response.status)
       
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Response error:', errorText)
-        throw new Error(`Failed to fetch kayak reviews: ${response.status}`)
+        throw new Error(`Failed to fetch kayak reviews: ${response.status}\n${errorText}`)
       }
       
       const data = await response.json()
       console.log('Received data:', data)
-      
-      if (!data.kayaks || !Array.isArray(data.kayaks)) {
-        throw new Error('Invalid data format')
-      }
-      
-      setReviews(data.kayaks)
+      setReviews(data)
+      setIsUsingCache(response.headers.get('x-using-fallback') === 'true')
     } catch (err) {
       console.error('Fetch error:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      let errorMessage = 'An error occurred'
+      let errorDetails = ''
+      
+      if (err instanceof Error) {
+        errorMessage = err.message
+        if (err.message.includes('Failed to fetch')) {
+          errorDetails = 'API connection failed. Please check your internet connection.'
+        } else if (err.message.includes('Invalid response format')) {
+          errorDetails = 'The API returned data in an unexpected format.'
+        } else if (err.message.includes('Invalid kayak data')) {
+          errorDetails = 'The API returned invalid kayak data.'
+        }
+      }
+      
+      setError({ message: errorMessage, details: errorDetails })
+      setIsUsingCache(true)
     } finally {
       setLoading(false)
     }
@@ -52,15 +62,30 @@ export default function KayakGrid() {
 
   if (error) {
     return (
-      <div className="text-center text-red-500 py-8">
-        Error: {error}
-        <br />
+      <div className="text-center py-8">
+        <div className="text-red-500 mb-2">Error: {error.message}</div>
+        {error.details && (
+          <div className="text-gray-600 text-sm mb-4">{error.details}</div>
+        )}
         <button 
           onClick={fetchKayakReviews} 
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Try Again
         </button>
+        {isUsingCache && reviews.length > 0 && (
+          <div className="mt-8">
+            <div className="text-gray-500 mb-4">Showing cached data:</div>
+            <div className="flex flex-col gap-8">
+              {reviews.map((review) => (
+                <KayakReviewCard key={review.id} review={review} />
+              ))}
+              <div className="text-center text-gray-500 text-sm mt-4 pb-4">
+                Cached data
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -71,6 +96,11 @@ export default function KayakGrid() {
         {reviews.map((review) => (
           <KayakReviewCard key={review.id} review={review} />
         ))}
+        {isUsingCache && (
+          <div className="text-center text-gray-500 text-sm mt-4 pb-4">
+            Cached data
+          </div>
+        )}
       </div>
     </div>
   )
