@@ -78,7 +78,7 @@ export async function GET() {
       try {
         // First try parsing the whole response
         kayakData = JSON.parse(cleanContent)
-      } catch (parseError) {
+      } catch {
         // If parsing fails, try to extract complete entries
         const entries = cleanContent.match(/\{[^{]*"id":[^}]*\}/g) || []
         
