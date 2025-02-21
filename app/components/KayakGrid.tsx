@@ -29,9 +29,15 @@ export default function KayakGrid() {
       
       const data = await response.json()
       console.log('Received data:', data)
+      
+      if (process.env.NODE_ENV === 'production') {
+        setIsUsingCache(true)
+      } else {
+        setIsUsingCache(response.headers.get('x-using-fallback') === 'true')
+      }
+
       setReviews(data.kayaks)
       setRawApiResponse(JSON.stringify(data, null, 2))
-      setIsUsingCache(response.headers.get('x-using-fallback') === 'true')
     } catch (err) {
       console.error('Fetch error:', err)
       let errorMessage = 'An error occurred'
@@ -99,17 +105,17 @@ export default function KayakGrid() {
         {reviews.map((review) => (
           <KayakReviewCard key={review.id} review={review} />
         ))}
-        {isUsingCache && (
+        
+        {(isUsingCache || process.env.NODE_ENV === 'production') && (
           <div className="text-center text-gray-500 text-sm mt-4 pb-4">
             Cached data
           </div>
         )}
         
-        {/* Raw API Response Section */}
         <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">Raw API Response:</h3>
-          <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm">
-            {rawApiResponse}
+          <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm whitespace-pre-wrap">
+            {rawApiResponse || JSON.stringify(reviews, null, 2)}
           </pre>
         </div>
       </div>
