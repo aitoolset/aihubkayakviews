@@ -22,11 +22,13 @@ jobs:
       - name: Build and prepare
         run: |
           npm run build
-          cp -r public/data out/
+          mkdir -p out/data
+          cp -r public/data/* out/data/
           touch out/.nojekyll
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
           branch: gh-pages
-          folder: out 
+          folder: out
+          clean: true 

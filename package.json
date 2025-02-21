@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build && cp -r public/data out/",
+    "build": "next build && mkdir -p out/data && cp -r public/data/* out/data/",
     "start": "next start",
     "lint": "next lint",
     "deploy": "npm run build && touch out/.nojekyll"

@@ -15,20 +15,24 @@ export default function KayakGrid() {
 
   async function fetchKayakReviews() {
     try {
-      const basePath = process.env.NODE_ENV === 'production' ? '/placeskayakviews' : ''
-      const response = await fetch(`${basePath}/data/kayaks.json`)
-      console.log('Fetching from:', `${basePath}/data/kayaks.json`)
+      // Simplified path for static deployment
+      const response = await fetch('./data/kayaks.json')
+      console.log('Fetching from:', './data/kayaks.json')
       console.log('Response status:', response.status)
+      
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Response error:', errorText)
         throw new Error(`Failed to fetch kayak reviews: ${response.status}`)
       }
+      
       const data = await response.json()
       console.log('Received data:', data)
+      
       if (!data.kayaks || !Array.isArray(data.kayaks)) {
         throw new Error('Invalid data format')
       }
+      
       setReviews(data.kayaks)
     } catch (err) {
       console.error('Fetch error:', err)
