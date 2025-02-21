@@ -5,7 +5,7 @@ const nextConfig = {
     unoptimized: true,
   },
   basePath: process.env.NODE_ENV === 'production',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/placeskayakviews' : '',
+  assetPrefix: process.env.NODE_ENV === 'production',
 }
 
 module.exports = nextConfig 
