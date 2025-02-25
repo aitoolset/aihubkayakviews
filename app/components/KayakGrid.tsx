@@ -4,13 +4,16 @@ import { useState, useEffect } from 'react'
 import { KayakReview } from '@/app/types'
 import KayakReviewCard from './KayakReviewCard'
 
-// Define API key at the top like weather app
-const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-console.log('Environment check:', {
+// Change the API key constant name
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+// Add more detailed environment checking
+console.log('Detailed Environment Check:', {
   isDev: process.env.NODE_ENV === 'development',
   hasApiKey: !!apiKey,
   keyLength: apiKey?.length,
-  keyStart: apiKey?.substring(0, 8)
+  keyValue: apiKey,  // Be careful with this in production
+  allEnvVars: process.env  // Be careful with this in production
 });
 
 export default function KayakGrid() {
@@ -33,80 +36,94 @@ export default function KayakGrid() {
     try {
       setShowResults(true)
       
-      // Log the API key (first few characters) for debugging
-      console.log('API Key starts with:', apiKey?.substring(0, 4));
+      const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
       
-      const url = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',  
-        headers: {
-          'Authorization': `Bearer ${apiKey}`.trim(),
-          'Content-Type': 'application/json',
-          'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://github.com/aitoolset/aihubkayakviews/',
-          'X-Title': 'Kayak Reviews App'
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.0-flash-lite-preview-02-05:free',
-          messages: [{
-            role: 'user',
-            content: `List the top 5 most popular single-seat kayaks reviewed in the past 6 months. For any kayak with variable specifications, use the average or most common values. Format the response as a JSON array with kayak details including id, title, specs (length, width, weight, capacity, material, type, price, accessories, seats), summary, and reviewDate.`
-          }],
+      const requestData = {
+        contents: [{
+          parts: [{
+            text: `Generate a JSON array of 5 popular single-seat kayaks. Each object should have:
+            {
+              "id": number,
+              "title": string,
+              "specs": {
+                "length": number,  // in feet
+                "width": number,   // in inches
+                "weight": number,  // in pounds
+                "capacity": number,// in pounds
+                "material": string,
+                "type": string,
+                "price": number,   // in USD
+                "accessories": string[],
+                "seats": number
+              },
+              "summary": string,
+              "reviewDate": string // YYYY-MM-DD
+            }
+            
+            Return ONLY the JSON array with no additional text or formatting.`
+          }]
+        }],
+        generationConfig: {
           temperature: 0.7,
-          max_tokens: 1000
-        })
+          maxOutputTokens: 1000,
+        }
+      };
+
+      const url = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
       });
 
       if(!url.ok) {
         setShowResults(false);
         const errorData = await url.text();
         console.error('API Error Response:', errorData);
-        
-        // Store the raw error response
         setRawApiResponse(errorData);
-        
-        // Try to parse the error response
-        try {
-          const errorJson = JSON.parse(errorData);
-          throw new Error(`API Error (${url.status}): ${errorJson.error || errorJson.message || 'Unknown error'}`);
-        } catch {
-          throw new Error(`Failed to fetch kayak data: ${url.status}\n${errorData}`);
-        }
+        throw new Error(`Failed to fetch kayak data: ${url.status}\n${errorData}`);
       }
 
       const data = await url.json();
       console.log('API Response:', data);
 
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        // Clean up the AI response before parsing
-        let content = data.choices[0].message.content;
-        
-        // Remove markdown code blocks if present
-        content = content.replace(/```json\n?|\n?```/g, '');
-        
-        // Trim whitespace
-        content = content.trim();
+      if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        let content = data.candidates[0].content.parts[0].text;
+        content = content.replace(/```json\n?|\n?```/g, '').trim();
         
         try {
-          // Try to fix incomplete JSON
-          if (content.endsWith(',') || content.endsWith('"')) {
-            // Remove trailing comma or quote
-            content = content.replace(/[,"]+$/, '');
-            // Close any unclosed objects/arrays
-            const openBrackets = (content.match(/\[/g) || []).length;
-            const closeBrackets = (content.match(/\]/g) || []).length;
-            const openBraces = (content.match(/{/g) || []).length;
-            const closeBraces = (content.match(/}/g) || []).length;
-            
-            // Add missing closing braces and brackets
-            content += '}'.repeat(openBraces - closeBraces);
-            content += ']'.repeat(openBrackets - closeBrackets);
-          }
+          // Clean up units and formatting in the JSON string
+          content = content
+            // Remove any control characters and extra whitespace
+            .replace(/[\n\r\t\s]+/g, ' ')
+            // Fix unclosed quotes in strings with commas
+            .replace(/",\s+and\s+/g, '. ')
+            // Fix unclosed quotes in titles
+            .replace(/("title":\s*"[^"]+)(?=,)/g, '$1"')
+            // Fix unclosed quotes in summaries
+            .replace(/("summary":\s*"[^"]+?)(?=",\s*")/g, '$1')
+            // Fix price format
+            .replace(/"price":\s*(\d+),(\d+)"/g, '"price": $1$2')
+            // Handle measurements
+            .replace(/"(length|width|weight|capacity)":\s*"(\d+(?:\.\d+)?)\s*(?:ft|"|lbs?)?"/g, '"$1": $2')
+            // Fix seats format
+            .replace(/"seats":\s*"(\d+)"/g, '"seats": $1')
+            // Handle any trailing commas in arrays
+            .replace(/,(\s*[\]}])/g, '$1')
+            // Fix unclosed braces and brackets
+            .replace(/}(?!\s*[,\]}])/g, '},')
+            .replace(/](?!\s*[,\]}])/g, '],')
+            // Remove any extra quotes around the entire JSON
+            .replace(/^"/, '').replace(/"$/, '')
+            // Ensure the JSON is complete
+            .replace(/^(.+),\s*$/, '$1');
 
-          console.log('Attempting to parse:', content);
+          console.log('Cleaned content:', content);
           const kayakData = JSON.parse(content);
           console.log('Parsed Kayak Data:', kayakData);
           
           if (Array.isArray(kayakData)) {
-            // Only take complete kayak entries
             const validKayaks = kayakData.filter(kayak => 
               kayak && 
               kayak.id && 
@@ -114,7 +131,20 @@ export default function KayakGrid() {
               kayak.specs &&
               kayak.summary &&
               kayak.reviewDate
-            );
+            ).map(kayak => ({
+              ...kayak,
+              specs: {
+                ...kayak.specs,
+                // Ensure numeric values with proper type checking
+                length: Number(kayak.specs.length),
+                width: Number(kayak.specs.width),
+                weight: Number(kayak.specs.weight),
+                capacity: Number(kayak.specs.capacity),
+                price: typeof kayak.specs.price === 'string' 
+                  ? Number(kayak.specs.price.replace(/[^0-9.-]+/g, ''))
+                  : Number(kayak.specs.price)
+              }
+            }));
 
             if (validKayaks.length > 0) {
               setReviews(validKayaks);

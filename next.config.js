@@ -5,23 +5,16 @@ const nextConfig = {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_OPENROUTER_API_KEY: process.env.NEXT_PUBLIC_OPENROUTER_API_KEY,
+    NEXT_PUBLIC_GEMINI_API_KEY: 'AIzaSyAF1Sk8VNQvQ5oYV7z09C2kXYPWyCOHoLw',
   },
   basePath: process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : '',
   assetPrefix: process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : '',
-  // Add rewrites for API routes
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: '/api/:path*',
-      },
-    ]
-  }
 }
 
+// Add debug logging
 console.log('Next.js config env check:', {
-  hasApiKey: !!process.env.NEXT_PUBLIC_OPENROUTER_API_KEY
+  hasApiKey: !!process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+  keyValue: process.env.NEXT_PUBLIC_GEMINI_API_KEY
 });
 
 module.exports = nextConfig 
