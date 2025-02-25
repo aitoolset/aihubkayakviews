@@ -4,6 +4,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  env: {
+    NEXT_PUBLIC_OPENROUTER_API_KEY: process.env.NEXT_PUBLIC_OPENROUTER_API_KEY,
+  },
   basePath: process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : '',
   assetPrefix: process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : '',
   // Add rewrites for API routes
@@ -16,5 +19,9 @@ const nextConfig = {
     ]
   }
 }
+
+console.log('Next.js config env check:', {
+  hasApiKey: !!process.env.NEXT_PUBLIC_OPENROUTER_API_KEY
+});
 
 module.exports = nextConfig 

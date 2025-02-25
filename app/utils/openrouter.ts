@@ -1,4 +1,8 @@
 const OPENROUTER_API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY
+console.log('OpenRouter API Key check:', {
+  hasKey: !!OPENROUTER_API_KEY,
+  keyStart: OPENROUTER_API_KEY?.substring(0, 8)
+});
 
 if (!OPENROUTER_API_KEY) {
   console.error('OpenRouter API key is not configured')
@@ -18,7 +22,7 @@ export async function queryOpenRouter(prompt: string) {
       'X-Title': 'Kayak Reviews App',
     },
     body: JSON.stringify({
-      model: 'google/gemini-flash-1.5-8b',
+      model: 'google/gemini-flash-1.5-8b"',
       messages: [
         {
           role: 'user',

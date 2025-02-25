@@ -6,6 +6,12 @@ import KayakReviewCard from './KayakReviewCard'
 
 // Define API key at the top like weather app
 const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+console.log('Environment check:', {
+  isDev: process.env.NODE_ENV === 'development',
+  hasApiKey: !!apiKey,
+  keyLength: apiKey?.length,
+  keyStart: apiKey?.substring(0, 8)
+});
 
 export default function KayakGrid() {
   const [reviews, setReviews] = useState<KayakReview[]>([])
@@ -27,10 +33,13 @@ export default function KayakGrid() {
     try {
       setShowResults(true)
       
+      // Log the API key (first few characters) for debugging
+      console.log('API Key starts with:', apiKey?.substring(0, 4));
+      
       const url = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',  
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${apiKey}`.trim(),
           'Content-Type': 'application/json',
           'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://github.com/aitoolset/aihubkayakviews/',
           'X-Title': 'Kayak Reviews App'
@@ -46,63 +55,67 @@ export default function KayakGrid() {
         })
       });
 
-      if(url.ok) {
-        const data = await url.json();
-        console.log('API Response:', data);
-
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          // Clean up the AI response before parsing
-          let content = data.choices[0].message.content;
-          
-          // Remove markdown code blocks if present
-          content = content.replace(/```json\n?|\n?```/g, '');
-          
-          // Trim whitespace
-          content = content.trim();
-          
-          try {
-            const kayakData = JSON.parse(content);
-            console.log('Parsed Kayak Data:', kayakData);
-            
-            if (Array.isArray(kayakData)) {
-              setReviews(kayakData);
-              setCurrentKayak(kayakData[0]);
-              setRawApiResponse(JSON.stringify(kayakData, null, 2));
-            } else {
-              throw new Error('Response is not an array');
-            }
-          } catch (parseError) {
-            console.error('JSON Parse Error:', parseError);
-            console.error('Content being parsed:', content);
-            throw new Error('Failed to parse kayak data');
-          }
-        } else {
-          throw new Error('Invalid API response structure');
-        }
-      } else {
+      if(!url.ok) {
         setShowResults(false);
         const errorData = await url.text();
         console.error('API Error Response:', errorData);
-        throw new Error(`Failed to fetch kayak data: ${url.status}`);
+        
+        // Store the raw error response
+        setRawApiResponse(errorData);
+        
+        // Try to parse the error response
+        try {
+          const errorJson = JSON.parse(errorData);
+          throw new Error(`API Error (${url.status}): ${errorJson.error || errorJson.message || 'Unknown error'}`);
+        } catch {
+          throw new Error(`Failed to fetch kayak data: ${url.status}\n${errorData}`);
+        }
+      }
+
+      const data = await url.json();
+      console.log('API Response:', data);
+
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        // Clean up the AI response before parsing
+        let content = data.choices[0].message.content;
+        
+        // Remove markdown code blocks if present
+        content = content.replace(/```json\n?|\n?```/g, '');
+        
+        // Trim whitespace
+        content = content.trim();
+        
+        try {
+          const kayakData = JSON.parse(content);
+          console.log('Parsed Kayak Data:', kayakData);
+          
+          if (Array.isArray(kayakData)) {
+            setReviews(kayakData);
+            setCurrentKayak(kayakData[0]);
+            setRawApiResponse(JSON.stringify(kayakData, null, 2));
+          } else {
+            throw new Error('Response is not an array');
+          }
+        } catch (parseError) {
+          console.error('JSON Parse Error:', parseError);
+          console.error('Content being parsed:', content);
+          throw new Error('Failed to parse kayak data');
+        }
+      } else {
+        throw new Error('Invalid API response structure');
       }
     } catch (err) {
       console.error('Fetch error:', err);
       setShowResults(false);
       
       let errorMessage = 'Failed to fetch kayak data';
-      let errorDetails = 'Please try again later';
+      let errorDetails = 'Please check your API key and try again';
       let status = null;
 
       if (err instanceof Error) {
         errorMessage = err.message;
-        // Try to parse the error response if it's JSON
-        try {
-          const errorJson = JSON.parse(rawApiResponse);
-          errorDetails = errorJson.error || errorJson.message || errorDetails;
-          status = errorJson.status;
-        } catch {
-          // If parsing fails, use the raw response
-          errorDetails = rawApiResponse || errorDetails;
+        if (err.message.includes('401')) {
+          errorDetails = 'Invalid or missing API key. Please check your environment variables.';
         }
       }
       
