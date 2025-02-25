@@ -1,4 +1,4 @@
-'use client'
+:x'use client'
 
 import { useState, useEffect } from 'react'
 import { KayakReview } from '@/app/types'
@@ -24,6 +24,7 @@ export default function KayakGrid() {
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Response error:', errorText)
+        setRawApiResponse(errorText)
         throw new Error(`Failed to fetch kayak reviews: ${response.status}`)
       }
       
@@ -82,6 +83,15 @@ export default function KayakGrid() {
         >
           Try Again
         </button>
+
+        {/* Show raw response even on error */}
+        <div className="mt-8 p-4 bg-gray-50 rounded-lg text-left">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Raw Response:</h3>
+          <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm whitespace-pre-wrap text-red-600">
+            {rawApiResponse}
+          </pre>
+        </div>
+
         {isUsingCache && reviews.length > 0 && (
           <div className="mt-8">
             <div className="text-gray-500 mb-4">Showing cached data:</div>
