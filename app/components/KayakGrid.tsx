@@ -31,31 +31,31 @@ export default function KayakGrid() {
       const requestData = {
         contents: [{
           parts: [{
-            text: `Generate a JSON array of 5 popular single-seat kayaks from the past 10 months. Each object should have:
-            {
-              "id": number,
-              "title": string,
-              "specs": {
-                "length": number,  // in feet
-                "width": number,   // in inches
-                "weight": number,  // in pounds
-                "capacity": number,// in pounds
-                "material": string,
-                "type": string,
-                "price": number,   // in USD
-                "accessories": string[],
-                "seats": number
-              },
-              "summary": string,
-              "reviewDate": string // YYYY-MM-DD
-            }
-            
-            Return ONLY the JSON array with no additional text or formatting.`
+            text: `Generate a JSON array of 5 popular single-seat kayaks. Make sure all results returned in JSON. Format as:
+            [
+              {
+                "id": 1,
+                "title": "Kayak Name",
+                "specs": {
+                  "length": 10,
+                  "width": 30,
+                  "weight": 50,
+                  "capacity": 300,
+                  "material": "polyethylene",
+                  "type": "sit-in",
+                  "price": 499,
+                  "accessories": ["paddle", "seat"],
+                  "seats": 1
+                },
+                "summary": "Brief description of the kayak."
+              }
+            ]
+            Keep descriptions under 100 characters. Return ONLY valid JSON. If the results aren't in Json, covert all the result to JSON.`
           }]
         }],
         generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
+          temperature: 0.3,  // Lower temperature for more consistent output
+          maxOutputTokens: 800,
         }
       };
 
@@ -92,7 +92,9 @@ export default function KayakGrid() {
             // Fix unclosed quotes in titles
             .replace(/("title":\s*"[^"]+)(?=,)/g, '$1"')
             // Fix unclosed quotes in summaries
-            .replace(/("summary":\s*"[^"]+?)(?=",\s*")/g, '$1')
+            .replace(/("summary":\s*"[^"]+?)(?=",\s*")/g, '$1"')
+            // Fix unclosed type values
+            .replace(/"type":\s*"([^"]+)(?=,|\})/g, '"type": "$1"')
             // Fix price format
             .replace(/"price":\s*(\d+),(\d+)"/g, '"price": $1$2')
             // Handle measurements
@@ -119,8 +121,7 @@ export default function KayakGrid() {
               kayak.id && 
               kayak.title && 
               kayak.specs &&
-              kayak.summary &&
-              kayak.reviewDate
+              kayak.summary
             ).map(kayak => ({
               ...kayak,
               specs: {
