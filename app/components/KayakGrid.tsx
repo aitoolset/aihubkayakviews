@@ -10,7 +10,11 @@ const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
 export default function KayakGrid() {
   const [reviews, setReviews] = useState<KayakReview[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<{message: string; details?: string} | null>(null)
+  const [error, setError] = useState<{
+    message: string;
+    details?: string;
+    status?: number | string | null;
+  } | null>(null)
   const [rawApiResponse, setRawApiResponse] = useState<string>('')
   const [currentKayak, setCurrentKayak] = useState<KayakReview | null>(null)
   const [showResults, setShowResults] = useState(true)
@@ -84,9 +88,28 @@ export default function KayakGrid() {
     } catch (err) {
       console.error('Fetch error:', err);
       setShowResults(false);
+      
+      let errorMessage = 'Failed to fetch kayak data';
+      let errorDetails = 'Please try again later';
+      let status = null;
+
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        // Try to parse the error response if it's JSON
+        try {
+          const errorJson = JSON.parse(rawApiResponse);
+          errorDetails = errorJson.error || errorJson.message || errorDetails;
+          status = errorJson.status;
+        } catch {
+          // If parsing fails, use the raw response
+          errorDetails = rawApiResponse || errorDetails;
+        }
+      }
+      
       setError({ 
-        message: err instanceof Error ? err.message : 'Failed to fetch kayak data',
-        details: 'Please try again later'
+        message: errorMessage,
+        details: errorDetails,
+        status: status
       });
     } finally {
       setLoading(false);
@@ -106,7 +129,24 @@ export default function KayakGrid() {
       <div className="text-center py-8">
         <div className="text-red-500 mb-2">Error: {error.message}</div>
         {error.details && <div className="text-gray-600 text-sm mb-4">{error.details}</div>}
-        <button onClick={fetchKayakReviews} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        
+        {/* Error Response Box */}
+        <div className="mx-auto max-w-2xl mt-4">
+          <div className="bg-gray-800 rounded-lg p-4 text-left">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-gray-400 text-sm">Error Response</span>
+              <span className="text-red-500 text-sm">Status: {error.status || 'Unknown'}</span>
+            </div>
+            <pre className="bg-gray-900 p-4 rounded overflow-auto text-sm whitespace-pre-wrap text-red-400">
+              {rawApiResponse || 'No response data available'}
+            </pre>
+          </div>
+        </div>
+
+        <button 
+          onClick={fetchKayakReviews} 
+          className="mt-6 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
           Try Again
         </button>
       </div>
