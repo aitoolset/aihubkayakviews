@@ -1,12 +1,35 @@
 'use client'
 import { KayakReview } from '@/app/types'
 
+// Add type for accessories
+interface KayakSpecs {
+  length: number;
+  width: number;
+  weight: number;
+  capacity: number;
+  material: string;
+  type: string;
+  price: number;
+  accessories: string[];
+  seats: number;
+}
+
+interface KayakReview {
+  id: number | string;
+  title: string;
+  specs: KayakSpecs;
+  summary: string;
+  reviewDate: string;
+}
+
 interface Props {
   review: KayakReview
 }
 
 export default function KayakReviewCard({ review }: Props) {
-  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(review.title + ' kayak review after:2023-01-01 before:2024-01-01' )}`
+  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+    review.title + ' kayak review after:2023-01-01 before:2025-01-01'
+  )}`
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 h-full">
@@ -57,7 +80,7 @@ export default function KayakReviewCard({ review }: Props) {
       <div className="mt-4">
         <div className="text-gray-500 text-sm mb-2">Accessories:</div>
         <div className="flex flex-wrap gap-2">
-          {review.specs.accessories.map((accessory, index) => (
+          {review.specs.accessories.map((accessory: string, index: number) => (
             <span 
               key={index} 
               className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
@@ -67,20 +90,6 @@ export default function KayakReviewCard({ review }: Props) {
           ))}
         </div>
       </div>
-
-      {/* Review Date */}
-      <div className="mt-4 text-right text-sm text-gray-500">
-        Reviewed: {review.reviewDate}
-      </div>
-    </div>
-  )
-}
-
-function SpecRow({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="flex flex-col">
-      <span className="font-medium text-gray-600">{label}</span>
-      <span className="text-gray-900">{value}</span>
     </div>
   )
 } 

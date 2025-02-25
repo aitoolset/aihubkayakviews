@@ -135,14 +135,19 @@ export default function KayakGrid() {
               ...kayak,
               specs: {
                 ...kayak.specs,
-                // Ensure numeric values with proper type checking
-                length: Number(kayak.specs.length),
-                width: Number(kayak.specs.width),
-                weight: Number(kayak.specs.weight),
-                capacity: Number(kayak.specs.capacity),
+                // Convert all numeric values
+                length: Number(kayak.specs.length || 0),
+                width: Number(kayak.specs.width || 0),
+                weight: Number(kayak.specs.weight || 0),
+                capacity: Number(kayak.specs.capacity || 0),
                 price: typeof kayak.specs.price === 'string' 
                   ? Number(kayak.specs.price.replace(/[^0-9.-]+/g, ''))
-                  : Number(kayak.specs.price)
+                  : Number(kayak.specs.price || 0),
+                // Ensure accessories is an array
+                accessories: Array.isArray(kayak.specs.accessories) 
+                  ? kayak.specs.accessories 
+                  : [],
+                seats: Number(kayak.specs.seats || 1)
               }
             }));
 
@@ -242,56 +247,10 @@ export default function KayakGrid() {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      {/* Current Kayak Display - Similar to current weather in the weather app */}
-      {currentKayak && (
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">{currentKayak.title}</h2>
-              <p className="text-gray-600 mt-2">{currentKayak.summary}</p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-blue-600">
-                ${currentKayak.specs.price}
-              </div>
-              <div className="text-gray-500 text-sm">
-                {currentKayak.specs.type}
-              </div>
-            </div>
-          </div>
-          
-          {/* Specs Grid - Similar to weather details */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="text-center p-3 bg-gray-50 rounded">
-              <div className="text-gray-500">Length</div>
-              <div className="text-lg font-semibold">{currentKayak.specs.length}ft</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded">
-              <div className="text-gray-500">Width</div>
-              <div className="text-lg font-semibold">{currentKayak.specs.width}&quot;</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded">
-              <div className="text-gray-500">Weight</div>
-              <div className="text-lg font-semibold">{currentKayak.specs.weight}lbs</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded">
-              <div className="text-gray-500">Capacity</div>
-              <div className="text-lg font-semibold">{currentKayak.specs.capacity}lbs</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Kayak List - Similar to forecast list */}
+      {/* Kayak List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {reviews.map((kayak) => (
-          <div 
-            key={kayak.id}
-            onClick={() => setCurrentKayak(kayak)}
-            className={`cursor-pointer transition-all ${
-              currentKayak?.id === kayak.id ? 'ring-2 ring-blue-500' : ''
-            }`}
-          >
+          <div key={kayak.id}>
             <KayakReviewCard review={kayak} />
           </div>
         ))}
