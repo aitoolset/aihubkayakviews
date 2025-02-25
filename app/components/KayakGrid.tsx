@@ -103,7 +103,7 @@ export default function KayakGrid() {
             </div>
             <div className="text-center p-3 bg-gray-50 rounded">
               <div className="text-gray-500">Width</div>
-              <div className="text-lg font-semibold">{currentKayak.specs.width}"</div>
+              <div className="text-lg font-semibold">{currentKayak.specs.width}&quot;</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded">
               <div className="text-gray-500">Weight</div>
