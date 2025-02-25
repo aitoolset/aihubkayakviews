@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react'
 import { KayakReview } from '@/app/types'
 import KayakReviewCard from './KayakReviewCard'
 
+// Define API key at the top like weather app
+const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+
 export default function KayakGrid() {
   const [reviews, setReviews] = useState<KayakReview[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<{message: string; details?: string} | null>(null)
   const [rawApiResponse, setRawApiResponse] = useState<string>('')
   const [currentKayak, setCurrentKayak] = useState<KayakReview | null>(null)
+  const [showResults, setShowResults] = useState(true)
 
   useEffect(() => {
     fetchKayakReviews()
@@ -17,41 +21,75 @@ export default function KayakGrid() {
 
   async function fetchKayakReviews() {
     try {
-      const basePath = process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : ''
-      const response = await fetch(`${basePath}/api/kayaks`)
+      setShowResults(true)
       
-      if (!response.ok) {
-        const errorText = await response.text()
-        setRawApiResponse(errorText)
-        throw new Error(`Failed to fetch kayak reviews: ${response.status}`)
-      }
+      const url = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',  
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://github.com/aitoolset/aihubkayakviews/',
+          'X-Title': 'Kayak Reviews App'
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-flash-1.5-8b',
+          messages: [{
+            role: 'user',
+            content: `List the top 5 most popular single-seat kayaks reviewed in the past 6 months. For any kayak with variable specifications, use the average or most common values. Format the response as a JSON array with kayak details including id, title, specs (length, width, weight, capacity, material, type, price, accessories, seats), summary, and reviewDate.`
+          }],
+          temperature: 0.7,
+          max_tokens: 1000
+        })
+      });
 
-      const data = await response.json()
+      if(url.ok) {
+        const data = await url.json();
+        console.log('API Response:', data);
 
-      if (Array.isArray(data) && data.length > 0) {
-        // Process the kayak data
-        const processedReviews = data.map(kayak => ({
-          ...kayak,
-          specs: {
-            ...kayak.specs,
-            price: Math.floor(kayak.specs.price)
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+          // Clean up the AI response before parsing
+          let content = data.choices[0].message.content;
+          
+          // Remove markdown code blocks if present
+          content = content.replace(/```json\n?|\n?```/g, '');
+          
+          // Trim whitespace
+          content = content.trim();
+          
+          try {
+            const kayakData = JSON.parse(content);
+            console.log('Parsed Kayak Data:', kayakData);
+            
+            if (Array.isArray(kayakData)) {
+              setReviews(kayakData);
+              setCurrentKayak(kayakData[0]);
+              setRawApiResponse(JSON.stringify(kayakData, null, 2));
+            } else {
+              throw new Error('Response is not an array');
+            }
+          } catch (parseError) {
+            console.error('JSON Parse Error:', parseError);
+            console.error('Content being parsed:', content);
+            throw new Error('Failed to parse kayak data');
           }
-        }))
-
-        setReviews(processedReviews)
-        setCurrentKayak(processedReviews[0]) // Set first kayak as current
-        setRawApiResponse(JSON.stringify(data, null, 2))
+        } else {
+          throw new Error('Invalid API response structure');
+        }
       } else {
-        throw new Error('No kayak data available')
+        setShowResults(false);
+        const errorData = await url.text();
+        console.error('API Error Response:', errorData);
+        throw new Error(`Failed to fetch kayak data: ${url.status}`);
       }
     } catch (err) {
-      console.error('Fetch error:', err)
+      console.error('Fetch error:', err);
+      setShowResults(false);
       setError({ 
         message: err instanceof Error ? err.message : 'Failed to fetch kayak data',
         details: 'Please try again later'
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -69,6 +107,20 @@ export default function KayakGrid() {
         <div className="text-red-500 mb-2">Error: {error.message}</div>
         {error.details && <div className="text-gray-600 text-sm mb-4">{error.details}</div>}
         <button onClick={fetchKayakReviews} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          Try Again
+        </button>
+      </div>
+    )
+  }
+
+  if (!showResults) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-red-500">No results found</div>
+        <button 
+          onClick={fetchKayakReviews} 
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
           Try Again
         </button>
       </div>
