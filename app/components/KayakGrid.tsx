@@ -7,15 +7,6 @@ import KayakReviewCard from './KayakReviewCard'
 // Change the API key constant name
 const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-// Add more detailed environment checking
-console.log('Detailed Environment Check:', {
-  isDev: process.env.NODE_ENV === 'development',
-  hasApiKey: !!apiKey,
-  keyLength: apiKey?.length,
-  keyValue: apiKey,  // Be careful with this in production
-  allEnvVars: process.env  // Be careful with this in production
-});
-
 export default function KayakGrid() {
   const [reviews, setReviews] = useState<KayakReview[]>([])
   const [loading, setLoading] = useState(true)
@@ -25,7 +16,6 @@ export default function KayakGrid() {
     status?: number | string | null;
   } | null>(null)
   const [rawApiResponse, setRawApiResponse] = useState<string>('')
-  const [currentKayak, setCurrentKayak] = useState<KayakReview | null>(null)
   const [showResults, setShowResults] = useState(true)
 
   useEffect(() => {
@@ -143,7 +133,6 @@ export default function KayakGrid() {
                 price: typeof kayak.specs.price === 'string' 
                   ? Number(kayak.specs.price.replace(/[^0-9.-]+/g, ''))
                   : Number(kayak.specs.price || 0),
-                // Ensure accessories is an array
                 accessories: Array.isArray(kayak.specs.accessories) 
                   ? kayak.specs.accessories 
                   : [],
@@ -153,7 +142,6 @@ export default function KayakGrid() {
 
             if (validKayaks.length > 0) {
               setReviews(validKayaks);
-              setCurrentKayak(validKayaks[0]);
               setRawApiResponse(JSON.stringify(validKayaks, null, 2));
             } else {
               throw new Error('No valid kayak entries found');

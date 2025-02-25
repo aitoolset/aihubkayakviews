@@ -5,7 +5,7 @@ const nextConfig = {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_GEMINI_API_KEY: 'AIzaSyAF1Sk8VNQvQ5oYV7z09C2kXYPWyCOHoLw',
+    NEXT_PUBLIC_GEMINI_API_KEY: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
   },
   basePath: process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : '',
   assetPrefix: process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : '',
