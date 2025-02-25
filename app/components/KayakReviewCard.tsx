@@ -1,27 +1,6 @@
 'use client'
 import { KayakReview } from '@/app/types'
 
-// Add type for accessories
-interface KayakSpecs {
-  length: number;
-  width: number;
-  weight: number;
-  capacity: number;
-  material: string;
-  type: string;
-  price: number;
-  accessories: string[];
-  seats: number;
-}
-
-interface KayakReview {
-  id: number | string;
-  title: string;
-  specs: KayakSpecs;
-  summary: string;
-  reviewDate: string;
-}
-
 interface Props {
   review: KayakReview
 }

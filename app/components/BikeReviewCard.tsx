@@ -31,7 +31,7 @@ export default function BikeReviewCard({ review }: Props) {
           <SpecRow label="Weight" value={`${review.specs.weight} lbs`} />
           <SpecRow label="Capacity" value={`${review.specs.capacity} lbs`} />
           <SpecRow label="Material" value={review.specs.material} />
-          <SpecRow label="Accessories" value={review.specs.accessories} />
+          <SpecRow label="Accessories" value={review.specs.accessories.join(', ')} />
           <SpecRow label="Seats" value={review.specs.seats} />
           <SpecRow label="Price" value={`$${review.specs.price}`} />
         </div>
