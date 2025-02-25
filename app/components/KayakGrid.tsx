@@ -45,7 +45,7 @@ export default function KayakGrid() {
           'X-Title': 'Kayak Reviews App'
         },
         body: JSON.stringify({
-          model: 'google/gemini-flash-1.5-8b',
+          model: 'google/gemini-2.0-flash-lite-preview-02-05:free',
           messages: [{
             role: 'user',
             content: `List the top 5 most popular single-seat kayaks reviewed in the past 6 months. For any kayak with variable specifications, use the average or most common values. Format the response as a JSON array with kayak details including id, title, specs (length, width, weight, capacity, material, type, price, accessories, seats), summary, and reviewDate.`
@@ -86,13 +86,43 @@ export default function KayakGrid() {
         content = content.trim();
         
         try {
+          // Try to fix incomplete JSON
+          if (content.endsWith(',') || content.endsWith('"')) {
+            // Remove trailing comma or quote
+            content = content.replace(/[,"]+$/, '');
+            // Close any unclosed objects/arrays
+            const openBrackets = (content.match(/\[/g) || []).length;
+            const closeBrackets = (content.match(/\]/g) || []).length;
+            const openBraces = (content.match(/{/g) || []).length;
+            const closeBraces = (content.match(/}/g) || []).length;
+            
+            // Add missing closing braces and brackets
+            content += '}'.repeat(openBraces - closeBraces);
+            content += ']'.repeat(openBrackets - closeBrackets);
+          }
+
+          console.log('Attempting to parse:', content);
           const kayakData = JSON.parse(content);
           console.log('Parsed Kayak Data:', kayakData);
           
           if (Array.isArray(kayakData)) {
-            setReviews(kayakData);
-            setCurrentKayak(kayakData[0]);
-            setRawApiResponse(JSON.stringify(kayakData, null, 2));
+            // Only take complete kayak entries
+            const validKayaks = kayakData.filter(kayak => 
+              kayak && 
+              kayak.id && 
+              kayak.title && 
+              kayak.specs &&
+              kayak.summary &&
+              kayak.reviewDate
+            );
+
+            if (validKayaks.length > 0) {
+              setReviews(validKayaks);
+              setCurrentKayak(validKayaks[0]);
+              setRawApiResponse(JSON.stringify(validKayaks, null, 2));
+            } else {
+              throw new Error('No valid kayak entries found');
+            }
           } else {
             throw new Error('Response is not an array');
           }
@@ -110,7 +140,7 @@ export default function KayakGrid() {
       
       let errorMessage = 'Failed to fetch kayak data';
       let errorDetails = 'Please check your API key and try again';
-      let status = null;
+      const status = null;
 
       if (err instanceof Error) {
         errorMessage = err.message;
