@@ -14,7 +14,7 @@ export async function queryOpenRouter(prompt: string) {
     headers: {
       'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://github.com/yourusername/placeskayakviews',
+      'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://github.com/aitoolset/placeskayakviews',
       'X-Title': 'Kayak Reviews App',
     },
     body: JSON.stringify({
