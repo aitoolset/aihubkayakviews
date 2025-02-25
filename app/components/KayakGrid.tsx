@@ -25,7 +25,14 @@ export default function KayakGrid() {
         const errorText = await response.text()
         console.error('Response error:', errorText)
         setRawApiResponse(errorText)
-        throw new Error(`Failed to fetch kayak reviews: ${response.status}`)
+        
+        // Try to parse the error response
+        try {
+          const errorJson = JSON.parse(errorText)
+          throw new Error(errorJson.error + (errorJson.details ? `: ${errorJson.details}` : ''))
+        } catch {
+          throw new Error(`Failed to fetch kayak reviews: ${response.status}`)
+        }
       }
       
       const data = await response.json()
