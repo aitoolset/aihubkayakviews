@@ -6,45 +6,71 @@ interface Props {
 }
 
 export default function KayakReviewCard({ review }: Props) {
-  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(review.title + ' kayak review')}`
+  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(review.title + ' kayak review after:2023-01-01 before:2024-01-01' )}`
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      {/* Video Search Link Section */}
-      <div className="p-6 bg-gray-50">
-        <a 
-          href={searchUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-        >
-          Search for {review.title} Reviews
-        </a>
+    <div className="bg-white rounded-lg shadow-lg p-6 h-full">
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">{review.title}</h2>
+          <p className="text-gray-600 mt-2 text-sm">{review.summary}</p>
+          <a 
+            href={searchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block hover:underline"
+          >
+            View vids of kayak reviews
+          </a>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-blue-600">
+            ${review.specs.price}
+          </div>
+          <div className="text-gray-500 text-sm">
+            {review.specs.type}
+          </div>
+        </div>
+      </div>
+      
+      {/* Specs Grid */}
+      <div className="grid grid-cols-2 gap-3 mt-4">
+        <div className="text-center p-2 bg-gray-50 rounded">
+          <div className="text-gray-500 text-sm">Length</div>
+          <div className="text-base font-semibold">{review.specs.length}ft</div>
+        </div>
+        <div className="text-center p-2 bg-gray-50 rounded">
+          <div className="text-gray-500 text-sm">Width</div>
+          <div className="text-base font-semibold">{review.specs.width}&quot;</div>
+        </div>
+        <div className="text-center p-2 bg-gray-50 rounded">
+          <div className="text-gray-500 text-sm">Weight</div>
+          <div className="text-base font-semibold">{review.specs.weight}lbs</div>
+        </div>
+        <div className="text-center p-2 bg-gray-50 rounded">
+          <div className="text-gray-500 text-sm">Capacity</div>
+          <div className="text-base font-semibold">{review.specs.capacity}lbs</div>
+        </div>
       </div>
 
-      {/* Specs Section */}
-      <div className="p-6">
-        <h2 className="text-2xl font-bold mb-4">{review.title}</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <SpecRow label="Length" value={`${review.specs.length} ft`} />
-          <SpecRow label="Width" value={`${review.specs.width} in`} />
-          <SpecRow label="Weight" value={`${review.specs.weight} lbs`} />
-          <SpecRow label="Capacity" value={`${review.specs.capacity} lbs`} />
-          <SpecRow label="Material" value={review.specs.material} />
-          <SpecRow label="Type" value={review.specs.type} />
-          <SpecRow label="Price" value={`$${review.specs.price}`} />
+      {/* Accessories */}
+      <div className="mt-4">
+        <div className="text-gray-500 text-sm mb-2">Accessories:</div>
+        <div className="flex flex-wrap gap-2">
+          {review.specs.accessories.map((accessory, index) => (
+            <span 
+              key={index} 
+              className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+            >
+              {accessory}
+            </span>
+          ))}
         </div>
-        
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Summary</h3>
-          <p className="text-gray-600 leading-relaxed">
-            {review.summary}
-          </p>
-        </div>
+      </div>
 
-        <div className="mt-4 text-sm text-gray-500">
-          Reviewed: {new Date(review.reviewDate).toLocaleDateString()}
-        </div>
+      {/* Review Date */}
+      <div className="mt-4 text-right text-sm text-gray-500">
+        Reviewed: {review.reviewDate}
       </div>
     </div>
   )

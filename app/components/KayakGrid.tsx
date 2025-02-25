@@ -41,7 +41,7 @@ export default function KayakGrid() {
       const requestData = {
         contents: [{
           parts: [{
-            text: `Generate a JSON array of 5 popular single-seat kayaks. Each object should have:
+            text: `Generate a JSON array of 5 popular single-seat kayaks from the past 10 months. Each object should have:
             {
               "id": number,
               "title": string,
@@ -295,14 +295,6 @@ export default function KayakGrid() {
             <KayakReviewCard review={kayak} />
           </div>
         ))}
-      </div>
-
-      {/* Debug Info */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">Raw API Response:</h3>
-        <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm whitespace-pre-wrap">
-          {rawApiResponse}
-        </pre>
       </div>
     </div>
   )
