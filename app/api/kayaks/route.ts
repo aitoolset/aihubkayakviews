@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { queryOpenRouter } from '@/app/utils/openrouter'
 import { KayakReview } from '@/app/types'
 
-const prompt = `List the top 5 most popular single-seat kayaks reviewed in the past 6 months. For any kayak with variable specifications, use the average or most common values. Format the response as a JSON array with this structure:
+const prompt = `List the top 5 most popular single-seat kayaks reviewed in the past 6 months. The summary field should be 3 sentences, at least 30 words. For any kayak with variable specifications, use the average or most common values. Format the response as a JSON array with this structure:
 {
   "id": (number),
   "title": (actual kayak name and model),
