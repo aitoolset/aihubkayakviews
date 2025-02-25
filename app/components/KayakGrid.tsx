@@ -84,25 +84,12 @@ export default function KayakGrid() {
           Try Again
         </button>
 
-        {isUsingCache && reviews.length > 0 && (
-          <div className="mt-8">
-            <div className="text-gray-500 mb-4">Showing cached data:</div>
-            <div className="mb-8 p-4 bg-gray-50 rounded-lg text-left">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">API Error Response:</h3>
-              <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm whitespace-pre-wrap text-red-600">
-                {rawApiResponse}
-              </pre>
-            </div>
-            <div className="flex flex-col gap-8">
-              {reviews.map((review) => (
-                <KayakReviewCard key={review.id} review={review} />
-              ))}
-              <div className="text-center text-gray-500 text-sm mt-4 pb-4">
-                Cached data
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="mt-8 p-4 bg-gray-50 rounded-lg text-left">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">API Error Response:</h3>
+          <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm whitespace-pre-wrap text-red-600">
+            {rawApiResponse}
+          </pre>
+        </div>
       </div>
     )
   }
@@ -123,7 +110,7 @@ export default function KayakGrid() {
         <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">Raw API Response:</h3>
           <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm whitespace-pre-wrap">
-            {rawApiResponse || JSON.stringify(reviews, null, 2)}
+            {rawApiResponse}
           </pre>
         </div>
       </div>
