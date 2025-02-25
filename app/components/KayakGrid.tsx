@@ -17,7 +17,7 @@ export default function KayakGrid() {
 
   async function fetchKayakReviews() {
     try {
-      const basePath = process.env.NODE_ENV === 'production' ? '/aitoolset/aihubkayakviews' : ''
+      const basePath = process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : ''
       const response = await fetch(`${basePath}/data/kayaks.json`)
       console.log('Fetching from:', `${basePath}/data/kayaks.json`)
       
