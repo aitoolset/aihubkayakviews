@@ -66,7 +66,7 @@ export async function generateStaticParams() {
 }
 
 // Middleware to handle static export
-async function handleStaticExport(req: Request) {
+async function handleStaticExport() {
   if (process.env.NODE_ENV === 'production') {
     return new NextResponse(JSON.stringify({
       error: 'API endpoint not available in static export',
@@ -79,9 +79,9 @@ async function handleStaticExport(req: Request) {
   return null
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   // Check for static export first
-  const staticResponse = await handleStaticExport(req)
+  const staticResponse = await handleStaticExport()
   if (staticResponse) return staticResponse
 
   try {
