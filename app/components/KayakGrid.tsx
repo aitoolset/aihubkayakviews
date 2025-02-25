@@ -31,7 +31,7 @@ export default function KayakGrid() {
       const requestData = {
         contents: [{
           parts: [{
-            text: `Generate a JSON array of 5 popular single-seat kayaks. Make sure all results returned in JSON. Format as:
+            text: `Generate a JSON array of 5 popular single-seat kayaks. Format as:
             [
               {
                 "id": 1,
@@ -50,7 +50,7 @@ export default function KayakGrid() {
                 "summary": "Brief description of the kayak."
               }
             ]
-            Keep descriptions under 100 characters. Return ONLY valid JSON. If the results aren't in Json, covert all the result to JSON.`
+            Keep descriptions under 100 characters. Return ONLY valid JSON. If the results aren't in Json, convert all the result to JSON.`
           }]
         }],
         generationConfig: {
