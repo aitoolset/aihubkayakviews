@@ -18,7 +18,7 @@ export async function queryOpenRouter(prompt: string) {
       'X-Title': 'Kayak Reviews App',
     },
     body: JSON.stringify({
-      model: 'anthropic/claude-3-sonnet',
+      model: 'google/gemini-flash-1.5-8b',
       messages: [
         {
           role: 'user',
@@ -37,5 +37,11 @@ export async function queryOpenRouter(prompt: string) {
   }
 
   const data = await response.json()
+  
+  if (!data || !data.choices || !data.choices[0] || !data.choices[0].message) {
+    console.error('Unexpected API response structure:', data)
+    throw new Error('Invalid API response structure')
+  }
+
   return data.choices[0].message.content
 } 

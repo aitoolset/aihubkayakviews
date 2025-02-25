@@ -18,8 +18,8 @@ export default function KayakGrid() {
   async function fetchKayakReviews() {
     try {
       const basePath = process.env.NODE_ENV === 'production' ? '/aihubkayakviews' : ''
-      const response = await fetch(`${basePath}/data/kayaks.json`)
-      console.log('Fetching from:', `${basePath}/data/kayaks.json`)
+      const response = await fetch(`${basePath}/api/kayaks`)
+      console.log('Fetching from:', `${basePath}/api/kayaks`)
       
       if (!response.ok) {
         const errorText = await response.text()
@@ -37,7 +37,7 @@ export default function KayakGrid() {
         setIsUsingCache(response.headers.get('x-using-fallback') === 'true')
       }
 
-      setReviews(data.kayaks)
+      setReviews(data)
       setRawApiResponse(JSON.stringify(data, null, 2))
     } catch (err) {
       console.error('Fetch error:', err)
@@ -84,17 +84,15 @@ export default function KayakGrid() {
           Try Again
         </button>
 
-        {/* Show raw response even on error */}
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg text-left">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Raw Response:</h3>
-          <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm whitespace-pre-wrap text-red-600">
-            {rawApiResponse}
-          </pre>
-        </div>
-
         {isUsingCache && reviews.length > 0 && (
           <div className="mt-8">
             <div className="text-gray-500 mb-4">Showing cached data:</div>
+            <div className="mb-8 p-4 bg-gray-50 rounded-lg text-left">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">API Error Response:</h3>
+              <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm whitespace-pre-wrap text-red-600">
+                {rawApiResponse}
+              </pre>
+            </div>
             <div className="flex flex-col gap-8">
               {reviews.map((review) => (
                 <KayakReviewCard key={review.id} review={review} />

@@ -62,7 +62,8 @@ function isValidKayakReview(review: unknown): review is KayakReview {
 
 export async function GET() {
   if (process.env.NODE_ENV === 'production') {
-    return new NextResponse(JSON.stringify(staticKayakData), {
+    // Limit static data to 4 entries
+    return new NextResponse(JSON.stringify(staticKayakData.slice(0, 4)), {
       headers: { 'x-using-fallback': 'true' }
     })
   }
@@ -111,7 +112,7 @@ export async function GET() {
         throw new Error('Invalid response format')
       }
 
-      // Validate each entry and limit to 4
+      // Always limit to 4 entries
       const validKayaks = kayakData
         .filter(isValidKayakReview)
         .slice(0, 4)
@@ -125,13 +126,13 @@ export async function GET() {
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError)
       console.error('Raw response:', response)
-      return new NextResponse(JSON.stringify(staticKayakData), {
+      return new NextResponse(JSON.stringify(staticKayakData.slice(0, 4)), {
         headers: { 'x-using-fallback': 'true' }
       })
     }
   } catch (error) {
     console.error('OpenRouter API error:', error)
-    return new NextResponse(JSON.stringify(staticKayakData), {
+    return new NextResponse(JSON.stringify(staticKayakData.slice(0, 4)), {
       headers: { 'x-using-fallback': 'true' }
     })
   }
